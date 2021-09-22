@@ -9,4 +9,9 @@ urlpatterns = [
     path('api/comment/<int:episodeID>/<str:username>', CommentAPI.as_view(), name="CommentAPI"),
     path('api/comment/<int:id>', theComment.as_view(), name="theComment"),
     path('api/reply/<int:id>', theReply.as_view(), name="theReply"),
+    path('api/login',LoginAPI.as_view(),name="LoginAPI"),
+    path('api/register',RegisterAPI.as_view(),name="RegisterAPI"),
+    path('api/profile/<str:username>',ProfileAPI.as_view(),name="ProfileAPI"),
+
+
 ]
