@@ -5,14 +5,6 @@ from rest_framework.response import Response
 import jwt
 from .models import *
 
-# Create your views here.
-
-
-class Hello(APIView):
-    def get(self, request):
-        return Response({"message": "Hello World"})
-
-
 class Shows(APIView):
     def get(self, request):
         allShows = Show.objects.all()
@@ -28,47 +20,74 @@ class Shows(APIView):
         return Response(allTheShows)
 
 
-# All episodes of a show
-class Episodes(APIView):
-    def get(self, request, ShowID):
-        allEpisodes = Episodes.objects.filter(show=ShowID)
-        allTheEpisodes = []
-        for theEpisode in allEpisodes:
-            thatEpisode = {
-                "id": theEpisode.id,
-                "name": theEpisode.name,
-                "episodeNumber": theEpisode.episodeNumber,
+class TheShow(APIView):
+    def get(self, request, showID):
+        try:
+            theShow = Show.objects.filter(id=showID)[0]
+            thatShow = {
+                "id": theShow.id,
+                "name": theShow.name,
+                "imageLink": theShow.imageLink,
+                "rating": theShow.rating
             }
-            allTheEpisodes.append(thatEpisode)
-        return Response(allTheEpisodes)
-# Get a particular Show
+            episodesOfTheShow = Episode.objects.filter(show = theShow)
+            requiredEpisodes = []
+            for epi in episodesOfTheShow:
+                theEpisode = {
+                    "show":epi.show.id,
+                    "name":epi.name,
+                    "episodeNumber":epi.episodeNumber,
+                }
+                requiredEpisodes.append(theEpisode)
+            return Response({"show": thatShow, "episodes": requiredEpisodes})
+        except:
+            return Response({"status": "404 Not Found", "message": "Show does not exist."})
 
+# TheEpisodeData - episodeID
+# All the Comments
+# All the replies to those comments
+class TheEpisodeData(APIView):
+    def get(self, request, episodeID):
+        try:
+            theEpisode = Episode.objects.filter(id=episodeID)[0]
+            theComments = Comment.objects.filter(id=episodeID)
+            thatEpisode = {
+                    "id":theEpisode.id,
+                    "show":theEpisode.show.id,
+                    "name":theEpisode.name,
+                    "episodeNumber":theEpisode.episodeNumber,
+                }
+            requiredComments = []
+            for comment in theComments:
+                theComment = {
+                        "id": comment.id,
+                        "user": {
+                            "username": comment.user.username,
+                            "email": comment.user.email,
+                            "firstname": comment.user.first_name,
+                            "lastname": comment.user.last_name,
+                        },
+                        "text": comment.text,
+                        "episode":comment.episode.id,
+                    }
+                repliesToThisComment = Reply.objects.filter(comment=comment)
+                allReplies = []
+                for reply in repliesToThisComment:
+                    theReply = {
+                        "text":reply.text,
+                        "comment":reply.comment.id,
+                        "user": {
+                            "username": reply.user.username,
+                            "email": reply.user.email,
+                            "firstname": reply.user.first_name,
+                            "lastname": reply.user.last_name,
+                        },
+                    }
+                    allReplies.append(theReply)
+                theComment["replies"] = allReplies
+                requiredComments.append(theComment)
+            return Response({"episode":thatEpisode,"comments":requiredComments})
+        except:
+            return Response({"status": "404 Not Found", "message": "Episode does not exist."})
 
-class theShow(APIView):
-    def get(self, request, ShowID):
-        # show_req = Shows.objects.filter(ShowID=ShowID)[0]
-        return Shows.objects.filter(id=ShowID)
-
-   
-# Get a particular Episode - all its comments and replies
-class theEpisode(APIView):
-    def get(self,request,EpisodeID):
-        return 
-
-# Add a comment to an episode (Post)
-
-class Comment(APIView):
-    def post(self,request,EpisodeID,user):
-        theComment = Comment.objects.filter(user=user)
-        resp = {
-            "user":Comment.user,
-
-        }
-
-# Add a reply to a comment (Post)
-
-# Delete a comment (delete)
-# Delete a reply
-
-# Update a comment (put)
-# Update reply
+#http://localhost:8000/api/episode/1

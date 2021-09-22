@@ -36,6 +36,7 @@ class Comment(models.Model):
 class Reply(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
     text = models.CharField(max_length=5000)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.text
