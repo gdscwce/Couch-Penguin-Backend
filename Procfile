@@ -1,1 +1,1 @@
-web: gunicorn beyondstatic.wsgi --log-file -
+web: gunicorn couchpenguin.wsgi --log-file -
